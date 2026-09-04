@@ -1,20 +1,18 @@
 require('dotenv').config()
+
 const express = require('express')
 const cors = require('cors')
 const { connectDB } = require('./config/db')
 const authRoutes = require('./routes/auth')
-const { products, requests } = require('./data')
+const Product = require('./models/Product')
+const Request = require('./models/Request')
 
 const app = express()
 const PORT = process.env.PORT || 5000
 
-// Initialize MongoDB Atlas Connection
-connectDB()
-
 app.use(cors())
 app.use(express.json())
 
-// Mount Authentication Routes
 app.use('/api/auth', authRoutes)
 
 app.get('/api/health', (req, res) => {
@@ -26,36 +24,29 @@ app.get('/api/products', async (req, res) => {
   res.json(products)
 })
 
-app.post('/api/products', (req, res) => {
-  const product = {
-    id: products.length ? Math.max(...products.map((p) => p.id || 0)) + 1 : 1,
-    ...req.body,
-  }
-  products.push(product)
+app.post('/api/products', async (req, res) => {
+  const product = await Product.create(req.body)
   res.status(201).json(product)
 })
 
-app.put('/api/products/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const index = products.findIndex((p) => p.id === id)
-  if (index === -1) {
+app.put('/api/products/:id', async (req, res) => {
+  const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true })
+  if (!updated) {
     return res.status(404).json({ error: 'Product not found' })
   }
-  products[index] = { ...products[index], ...req.body, id }
-  res.json(products[index])
+  res.json(updated)
 })
 
-app.delete('/api/products/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const index = products.findIndex((p) => p.id === id)
-  if (index === -1) {
+app.delete('/api/products/:id', async (req, res) => {
+  const deleted = await Product.findByIdAndDelete(req.params.id)
+  if (!deleted) {
     return res.status(404).json({ error: 'Product not found' })
   }
-  const deleted = products.splice(index, 1)[0]
   res.json(deleted)
 })
 
-app.get('/api/requests', (req, res) => {
+app.get('/api/requests', async (req, res) => {
+  const requests = await Request.find()
   res.json(requests)
 })
 

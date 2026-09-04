@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, NavLink } from 'react-router-dom'
 import { LangProvider, useLang } from './context/LangContext'
 import Home from './pages/Home'
 import Products from './pages/Products'
@@ -9,65 +9,55 @@ import Dashboard from './pages/Dashboard'
 function NavBar() {
   const { lang, toggleLang, t } = useLang()
 
+  const navLinkClasses = ({ isActive }) =>
+    `px-4 py-2 rounded-full font-medium transition-all duration-200 ${
+      isActive
+        ? 'bg-green-100 text-green-800 shadow-sm'
+        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+    }`
+
   return (
-    <nav className="bg-white/95 backdrop-blur border-b border-slate-200 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Brand */}
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg text-emerald-800 hover:opacity-90">
-          <span className="text-2xl">🌾</span>
-          <span>AgriConnect</span>
-          <span className="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-            Marketplace
+    <nav className="sticky top-0 z-50 w-full backdrop-blur-xl bg-white/80 border-b border-slate-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-3 group">
+          <span className="text-3xl group-hover:scale-110 transition-transform duration-300 inline-block">🌾</span>
+          <span className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-green-700 to-emerald-500 tracking-tight">
+            AgriConnect
           </span>
         </Link>
 
-        {/* Links */}
-        <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-semibold text-slate-600">
-          <Link
-            to="/"
-            className="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition"
-          >
-            {t('home')}
-          </Link>
-          <Link
-            to="/products"
-            className="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/60 font-bold transition flex items-center gap-1"
-          >
-            <span>👨🌾</span>
-            <span>{t('products')}</span>
-          </Link>
-          <Link
-            to="/search"
-            className="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition flex items-center gap-1"
-          >
-            <span>🔎</span>
-            <span>{t('search')}</span>
-          </Link>
-          <Link
-            to="/requests"
-            className="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition flex items-center gap-1"
-          >
-            <span>🤝</span>
-            <span>{t('requests')}</span>
-          </Link>
-          <Link
-            to="/dashboard"
-            className="px-3 py-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-900 transition flex items-center gap-1"
-          >
-            <span>📊</span>
-            <span>{t('myDashboard')}</span>
-          </Link>
+        {/* Desktop Links */}
+        <div className="hidden md:flex items-center gap-2">
+          <NavLink to="/" className={navLinkClasses}>Home</NavLink>
+          <NavLink to="/products" className={navLinkClasses}>Products</NavLink>
+          <NavLink to="/search" className={navLinkClasses}>{t('search')}</NavLink>
+          <NavLink to="/requests" className={navLinkClasses}>Requests</NavLink>
+          <NavLink to="/dashboard" className={navLinkClasses}>{t('myDashboard')}</NavLink>
         </div>
 
-        {/* Language switch button */}
-        <button
-          type="button"
-          onClick={toggleLang}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition shadow-xs cursor-pointer active:scale-95"
-        >
-          <span>🌐</span>
-          <span>{lang === 'en' ? 'සිංහල' : 'English'}</span>
-        </button>
+        {/* Action / Lang Toggle */}
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={toggleLang}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-slate-200 hover:border-green-300 hover:bg-green-50 text-slate-700 transition-all font-semibold shadow-sm hover:shadow active:scale-95"
+          >
+            <span className="text-lg">🌍</span>
+            {lang === 'en' ? 'සිංහල' : 'English'}
+          </button>
+        </div>
+      </div>
+      
+      {/* Mobile Nav */}
+      <div className="md:hidden overflow-x-auto border-t border-slate-100 bg-white/50 backdrop-blur-md">
+        <div className="flex p-3 gap-2 min-w-max">
+          <NavLink to="/" className={navLinkClasses}>Home</NavLink>
+          <NavLink to="/products" className={navLinkClasses}>Products</NavLink>
+          <NavLink to="/search" className={navLinkClasses}>{t('search')}</NavLink>
+          <NavLink to="/requests" className={navLinkClasses}>Requests</NavLink>
+          <NavLink to="/dashboard" className={navLinkClasses}>{t('myDashboard')}</NavLink>
+        </div>
       </div>
     </nav>
   )
@@ -77,14 +67,18 @@ function App() {
   return (
     <LangProvider>
       <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/search" element={<Search />} />
-          <Route path="/requests" element={<Requests />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
+        <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+          <NavBar />
+          <main className="flex-grow flex flex-col">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/products" element={<Products />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/requests" element={<Requests />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Routes>
+          </main>
+        </div>
       </BrowserRouter>
     </LangProvider>
   )

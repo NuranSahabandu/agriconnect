@@ -1,6 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050'
 const STORAGE_KEY_PRODUCTS = 'agriconnect_products'
 const STORAGE_KEY_USERS = 'agriconnect_registered_users'
+const STORAGE_KEY_REQUESTS = 'agriconnect_requests'
 
 export const INITIAL_PRODUCTS = [
   {
@@ -283,20 +284,93 @@ export async function deleteProduct(id) {
 
 // ---------------- REQUESTS API ----------------
 
-export function getRequests() {
-  return request('/api/requests')
+export function getLocalRequests() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY_REQUESTS) || '[]')
+  } catch {
+    return []
+  }
 }
 
-export function addRequest(requestData) {
-  return request('/api/requests', {
-    method: 'POST',
-    body: JSON.stringify(requestData),
-  })
+export function saveLocalRequests(requests) {
+  try {
+    localStorage.setItem(STORAGE_KEY_REQUESTS, JSON.stringify(requests))
+  } catch (e) {
+    console.error('Failed to save requests locally', e)
+  }
 }
 
-export function updateRequest(id, statusData) {
-  return request(`/api/requests/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(statusData),
-  })
+export async function getRequests() {
+  try {
+    const serverRequests = await request('/api/requests')
+    // If the server has data, prioritize it and sync locally
+    if (Array.isArray(serverRequests) && serverRequests.length > 0) {
+      saveLocalRequests(serverRequests)
+      return serverRequests
+    }
+    // If server is empty (e.g. memory wiped on restart), use local fallback
+    const local = getLocalRequests()
+    if (local.length > 0) return local
+    return serverRequests || []
+  } catch (err) {
+    console.warn('Backend unavailable, using local requests:', err.message)
+    return getLocalRequests()
+  }
 }
+
+export async function addRequest(requestData) {
+  try {
+    const savedReq = await request('/api/requests', {
+      method: 'POST',
+      body: JSON.stringify(requestData),
+    })
+    if (savedReq) {
+      const current = getLocalRequests().filter((r) => String(r.id) !== String(savedReq.id))
+      saveLocalRequests([savedReq, ...current])
+      return savedReq
+    }
+  } catch (err) {
+    console.warn('Backend unavailable, saving request locally:', err.message)
+  }
+
+  // Fallback
+  const current = getLocalRequests()
+  const newId = current.length ? Math.max(...current.map((r) => Number(r.id) || 0)) + 1 : 1
+  const newReq = {
+    ...requestData,
+    id: newId,
+    status: 'Pending',
+    createdAt: new Date().toISOString(),
+  }
+  saveLocalRequests([newReq, ...current])
+  return newReq
+}
+
+export async function updateRequest(id, statusData) {
+  try {
+    const updatedReq = await request(`/api/requests/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(statusData),
+    })
+    if (updatedReq) {
+      const current = getLocalRequests().map((r) =>
+        String(r.id) === String(id) ? updatedReq : r
+      )
+      saveLocalRequests(current)
+      return updatedReq
+    }
+  } catch (err) {
+    console.warn('Backend unavailable, updating request locally:', err.message)
+  }
+
+  // Fallback
+  const current = getLocalRequests()
+  const index = current.findIndex((r) => String(r.id) === String(id))
+  if (index === -1) throw new Error('Request not found locally')
+  
+  const updatedReq = { ...current[index], ...statusData }
+  current[index] = updatedReq
+  saveLocalRequests(current)
+  return updatedReq
+}
+

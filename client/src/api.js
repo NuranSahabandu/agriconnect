@@ -184,12 +184,12 @@ export async function getMe() {
 export async function getProducts() {
   try {
     const serverProducts = await request('/api/products')
-    if (Array.isArray(serverProducts) && serverProducts.length > 0) {
+    if (Array.isArray(serverProducts)) {
       saveLocalProducts(serverProducts)
       return serverProducts
     }
-  } catch {
-    // Fallback to localStorage
+  } catch (err) {
+    console.warn('Backend unavailable, using local cached products:', err.message)
   }
   return getLocalProducts()
 }
@@ -208,7 +208,12 @@ export async function addProduct(product) {
       return savedServerProduct
     }
   } catch (err) {
-    console.warn('Backend unavailable, saving product locally:', err.message)
+    console.error('Error saving product to backend MongoDB Atlas:', err)
+    // If backend replied with an HTTP error, propagate so UI informs the farmer
+    if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError') && !err.message.includes('Load failed')) {
+      throw err
+    }
+    console.warn('Backend server unreachable, saving locally:', err.message)
   }
 
   // Fallback if backend offline
@@ -239,7 +244,11 @@ export async function updateProduct(id, updatedFields) {
       return updatedServerProduct
     }
   } catch (err) {
-    console.warn('Backend unavailable, updating product locally:', err.message)
+    console.error('Error updating product on MongoDB Atlas:', err)
+    if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError') && !err.message.includes('Load failed')) {
+      throw err
+    }
+    console.warn('Backend offline, updating product locally:', err.message)
   }
 
   // Fallback update
@@ -259,7 +268,11 @@ export async function deleteProduct(id) {
       method: 'DELETE',
     })
   } catch (err) {
-    console.warn('Backend unavailable, deleting product locally:', err.message)
+    console.error('Error deleting product from MongoDB Atlas:', err)
+    if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError') && !err.message.includes('Load failed')) {
+      throw err
+    }
+    console.warn('Backend offline, deleting product locally:', err.message)
   }
 
   const current = getLocalProducts()

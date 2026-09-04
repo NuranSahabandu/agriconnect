@@ -274,7 +274,7 @@ export default function Products() {
       await refreshProducts()
     } catch (err) {
       console.error(err)
-      showToast('Error saving product. Please try again.', 'error')
+      showToast(err.message || 'Error saving product. Please try again.', 'error')
     }
   }
 

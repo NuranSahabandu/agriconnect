@@ -1,5 +1,7 @@
 import { useState, useEffect, useId } from 'react'
+import { Link } from 'react-router-dom'
 import { useLang } from '../context/LangContext'
+import { useAuth } from '../context/AuthContext'
 import {
   getProducts,
   getLocalProducts,
@@ -72,6 +74,7 @@ const DEMO_PRESETS = [
 
 export default function Products() {
   const { t } = useLang()
+  const { user, isAuthenticated, isFarmer } = useAuth()
   const formId = useId()
 
   const [products, setProducts] = useState(() => getLocalProducts())
@@ -80,8 +83,6 @@ export default function Products() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('All')
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
-
-  // Notification state
   const [toast, setToast] = useState(null)
 
   // Form State
@@ -91,10 +92,10 @@ export default function Products() {
     quantity: '',
     unit: 'kg',
     price: '',
-    location: 'Dambulla',
+    location: user?.location || 'Dambulla',
     customLocation: '',
-    farmer: '',
-    contact: '',
+    farmer: user?.name || user?.farmName || '',
+    contact: user?.phone || '',
     description: '',
   }
 
@@ -141,7 +142,12 @@ export default function Products() {
 
   const handleOpenAddModal = () => {
     setEditingId(null)
-    setFormData(initialFormState)
+    setFormData({
+      ...initialFormState,
+      farmer: user?.name || user?.farmName || '',
+      contact: user?.phone || '',
+      location: user?.location || 'Dambulla',
+    })
     setErrors({})
     setIsModalOpen(true)
   }
@@ -162,16 +168,21 @@ export default function Products() {
 
     if (!formData.category) {
       newErrors.category = t('errCategoryRequired')
+      newErrors.name = t('errNameRequired') || 'Product name is required (min 2 characters)'
+    }
+
+    if (!formData.category) {
+      newErrors.category = t('errCategoryRequired') || 'Please select a category'
     }
 
     const qty = parseFloat(formData.quantity)
     if (isNaN(qty) || qty <= 0) {
-      newErrors.quantity = t('errQuantityRequired')
+      newErrors.quantity = t('errQuantityRequired') || 'Quantity must be greater than 0'
     }
 
     const price = parseFloat(formData.price)
     if (isNaN(price) || price <= 0) {
-      newErrors.price = t('errPriceRequired')
+      newErrors.price = t('errPriceRequired') || 'Price must be greater than 0'
     }
 
     const finalLocation =
@@ -180,17 +191,16 @@ export default function Products() {
         : formData.location
 
     if (!finalLocation) {
-      newErrors.location = t('errLocationRequired')
+      newErrors.location = t('errLocationRequired') || 'Location is required'
     }
 
     if (!formData.farmer.trim()) {
-      newErrors.farmer = t('errFarmerRequired')
+      newErrors.farmer = t('errFarmerRequired') || 'Farmer name is required'
     }
 
-    // Phone validation: at least 9 numeric digits
     const cleanedPhone = formData.contact.replace(/\D/g, '')
     if (!cleanedPhone || cleanedPhone.length < 9) {
-      newErrors.contact = t('errContactRequired')
+      newErrors.contact = t('errContactRequired') || 'Valid phone number is required (at least 9 digits)'
     }
 
     setErrors(newErrors)
@@ -246,10 +256,10 @@ export default function Products() {
     try {
       if (editingId) {
         await updateProduct(editingId, payload)
-        showToast(t('productUpdatedSuccess'))
+        showToast(t('productUpdatedSuccess') || 'Listing updated successfully!')
       } else {
         await addProduct(payload)
-        showToast(t('productAddedSuccess'))
+        showToast(t('productAddedSuccess') || 'Listing added to market!')
       }
 
       handleCloseModal()
@@ -288,7 +298,7 @@ export default function Products() {
       if (editingId === id) {
         handleCloseModal()
       }
-      showToast(t('productDeletedSuccess'))
+      showToast(t('productDeletedSuccess') || 'Product deleted from marketplace!')
       await refreshProducts()
     } catch (err) {
       console.error(err)
@@ -433,7 +443,7 @@ export default function Products() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('searchListings')}
+                placeholder={t('searchListings') || 'Filter products...'}
                 className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
               />
               {searchTerm && (

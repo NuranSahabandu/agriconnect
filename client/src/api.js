@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-const STORAGE_KEY = 'agriconnect_products'
+const STORAGE_KEY_PRODUCTS = 'agriconnect_products'
+const STORAGE_KEY_USERS = 'agriconnect_registered_users'
 
 export const INITIAL_PRODUCTS = [
   {
@@ -58,9 +59,9 @@ export const INITIAL_PRODUCTS = [
 
 export function getLocalProducts() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(STORAGE_KEY_PRODUCTS)
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PRODUCTS))
+      localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(INITIAL_PRODUCTS))
       return INITIAL_PRODUCTS
     }
     return JSON.parse(raw)
@@ -71,7 +72,7 @@ export function getLocalProducts() {
 
 export function saveLocalProducts(products) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products))
+    localStorage.setItem(STORAGE_KEY_PRODUCTS, JSON.stringify(products))
     window.dispatchEvent(new Event('productsUpdated'))
   } catch (e) {
     console.error('Failed to save products to localStorage', e)
@@ -79,17 +80,106 @@ export function saveLocalProducts(products) {
 }
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  })
-
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status} ${res.statusText}`)
+  const token = localStorage.getItem('agriconnect_token')
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
   }
 
-  return res.json()
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+  })
+
+  const data = await res.json().catch(() => ({}))
+
+  if (!res.ok) {
+    throw new Error(data.error || `Request failed: ${res.status} ${res.statusText}`)
+  }
+
+  return data
 }
+
+// ---------------- AUTH API ----------------
+
+export async function registerUser(userData) {
+  try {
+    const res = await request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    })
+    return res
+  } catch (err) {
+    // If backend is not running, save to localStorage fallback so user can still register
+    console.warn('Backend unavailable, using local registration fallback:', err.message)
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]')
+    if (existing.some((u) => u.email.toLowerCase() === userData.email.toLowerCase())) {
+      throw new Error('An account with this email already exists.')
+    }
+    const newUser = {
+      id: Date.now().toString(),
+      ...userData,
+      createdAt: new Date().toISOString(),
+    }
+    existing.push(newUser)
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(existing))
+
+    return {
+      success: true,
+      token: 'mock-jwt-token-' + Date.now(),
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        phone: newUser.phone,
+        location: newUser.location,
+        farmName: newUser.farmName || '',
+        buyerType: newUser.buyerType || '',
+      },
+      database: 'Local Fallback',
+    }
+  }
+}
+
+export async function loginUser(credentials) {
+  try {
+    return await request('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    })
+  } catch (err) {
+    // Fallback search in local storage
+    const existing = JSON.parse(localStorage.getItem(STORAGE_KEY_USERS) || '[]')
+    const user = existing.find(
+      (u) => u.email.toLowerCase() === credentials.email.toLowerCase()
+    )
+    if (user) {
+      return {
+        success: true,
+        token: 'mock-jwt-token-' + Date.now(),
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          phone: user.phone,
+          location: user.location,
+          farmName: user.farmName || '',
+          buyerType: user.buyerType || '',
+        },
+      }
+    }
+    throw err
+  }
+}
+
+export async function getMe() {
+  return request('/api/auth/me')
+}
+
+// ---------------- PRODUCTS API ----------------
 
 export async function getProducts() {
   try {
@@ -99,7 +189,7 @@ export async function getProducts() {
       return serverProducts
     }
   } catch {
-    // Backend offline or unreachable, fallback to localStorage seamlessly
+    // Fallback to localStorage
   }
   return getLocalProducts()
 }
@@ -113,18 +203,16 @@ export async function addProduct(product) {
     createdAt: new Date().toISOString(),
   }
 
-  // Save to local storage first
   const updated = [newProduct, ...current]
   saveLocalProducts(updated)
 
-  // Try sync to server
   try {
     await request('/api/products', {
       method: 'POST',
       body: JSON.stringify(newProduct),
     })
   } catch {
-    // Ignore server error; local copy is secure
+    // Ignore server error
   }
 
   return newProduct
@@ -145,7 +233,7 @@ export async function updateProduct(id, updatedFields) {
       body: JSON.stringify(updatedProduct),
     })
   } catch {
-    // Ignore server error; local copy is secure
+    // Ignore server error
   }
 
   return updatedProduct
@@ -166,6 +254,8 @@ export async function deleteProduct(id) {
 
   return { success: true }
 }
+
+// ---------------- REQUESTS API ----------------
 
 export function getRequests() {
   return request('/api/requests')

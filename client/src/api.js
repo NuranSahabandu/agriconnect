@@ -281,3 +281,9 @@ export function addRequest(requestData) {
   })
 }
 
+export function updateRequest(id, statusData) {
+  return request(`/api/requests/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(statusData),
+  })
+}

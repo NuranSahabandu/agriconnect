@@ -158,11 +158,7 @@ export default function Register() {
       setSuccessMsg(`Welcome to AgriConnect! Registered successfully into ${res.database || 'MongoDB Atlas'}.`)
 
       setTimeout(() => {
-        if (role === 'farmer') {
-          navigate('/products')
-        } else {
-          navigate('/search')
-        }
+        navigate('/products')
       }, 1200)
     } catch (err) {
       setServerError(err.message || 'Registration failed. Please check your details.')

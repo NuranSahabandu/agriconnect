@@ -76,8 +76,8 @@ export function AuthProvider({ children }) {
     login,
     logout,
     isAuthenticated: Boolean(user),
-    isFarmer: user?.role === 'farmer',
-    isBuyer: user?.role === 'buyer',
+    isFarmer: Boolean(user && user.role === 'farmer'),
+    isBuyer: Boolean(user && (user.role === 'buyer' || user.role === 'customer')),
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

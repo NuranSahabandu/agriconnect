@@ -25,11 +25,7 @@ export default function Login() {
     try {
       setLoading(true)
       const res = await login(email.trim(), password)
-      if (res?.user?.role === 'farmer') {
-        navigate('/products')
-      } else {
-        navigate('/search')
-      }
+      navigate('/products')
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.')
     } finally {

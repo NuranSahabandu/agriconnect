@@ -73,9 +73,11 @@ const DEMO_PRESETS = [
 ]
 
 export default function Products() {
-  const { t } = useLang()
+  const { t, lang } = useLang()
   const { user, isAuthenticated, isFarmer } = useAuth()
   const formId = useId()
+
+  const isFarmerUser = Boolean(isAuthenticated && isFarmer)
 
   const [products, setProducts] = useState(() => getLocalProducts())
   const [editingId, setEditingId] = useState(null)
@@ -141,6 +143,7 @@ export default function Products() {
   }
 
   const handleOpenAddModal = () => {
+    if (!isFarmerUser) return
     setEditingId(null)
     setFormData({
       ...initialFormState,
@@ -231,6 +234,11 @@ export default function Products() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    if (!isFarmerUser) {
+      showToast('Only farmers are authorized to manage products.', 'error')
+      return
+    }
+
     if (!validateForm()) {
       showToast('Please correct the highlighted form errors.', 'error')
       return
@@ -271,6 +279,7 @@ export default function Products() {
   }
 
   const handleEdit = (product) => {
+    if (!isFarmerUser) return
     setEditingId(product.id)
 
     const isCustomLoc = !SRI_LANKA_LOCATIONS.includes(product.location)
@@ -292,6 +301,7 @@ export default function Products() {
   }
 
   const handleDelete = async (id) => {
+    if (!isFarmerUser) return
     try {
       await deleteProduct(id)
       setDeleteConfirmId(null)
@@ -327,6 +337,7 @@ export default function Products() {
     0
   )
   const uniqueCategories = new Set(products.map((p) => p.category)).size
+  const uniqueLocations = new Set(products.map((p) => p.location)).size
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 pb-20">
@@ -355,29 +366,48 @@ export default function Products() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <div className="inline-flex items-center gap-2 bg-emerald-900/60 border border-emerald-400/30 px-3 py-1 rounded-full text-xs tracking-wide uppercase font-semibold text-emerald-200 mb-3">
-              <span>🌾 Member 1: Farmer Portal</span>
+              <span>
+                {isFarmerUser
+                  ? (lang === 'si' ? '🌾 ගොවි පුවරුව' : '🌾 Farmer Portal')
+                  : (lang === 'si' ? '🛒 පාරිභෝගික වෙළඳපොළ' : '🛒 Customer Marketplace')}
+              </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-              {t('farmerTitle')}
+              {isFarmerUser ? t('farmerTitle') : t('marketplaceTitle')}
             </h1>
             <p className="text-emerald-100 text-base max-w-2xl mt-2">
-              {t('farmerSubtitle')}
+              {isFarmerUser ? t('farmerSubtitle') : t('marketplaceSubtitle')}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={handleOpenAddModal}
-              className="inline-flex items-center gap-2 bg-white text-emerald-800 font-bold px-5 py-3 rounded-xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all text-sm cursor-pointer"
-            >
-              <span className="text-lg">➕</span>
-              <span>{t('addNewProduct')}</span>
-            </button>
-            <span className="inline-flex items-center gap-1.5 bg-emerald-900/50 border border-emerald-500/40 text-emerald-100 font-medium px-4 py-3 rounded-xl text-sm">
-              <span>📋</span>
-              <span>{totalListings} {t('myListings')}</span>
-            </span>
+            {isFarmerUser ? (
+              <>
+                <button
+                  type="button"
+                  onClick={handleOpenAddModal}
+                  className="inline-flex items-center gap-2 bg-white text-emerald-800 font-bold px-5 py-3 rounded-xl shadow-lg hover:bg-emerald-50 active:scale-95 transition-all text-sm cursor-pointer"
+                >
+                  <span className="text-lg">➕</span>
+                  <span>{t('addNewProduct')}</span>
+                </button>
+                <span className="inline-flex items-center gap-1.5 bg-emerald-900/50 border border-emerald-500/40 text-emerald-100 font-medium px-4 py-3 rounded-xl text-sm">
+                  <span>📋</span>
+                  <span>{totalListings} {t('myListings')}</span>
+                </span>
+              </>
+            ) : (
+              <div className="flex flex-wrap items-center gap-2.5">
+                <span className="inline-flex items-center gap-2 bg-emerald-900/50 border border-emerald-500/40 text-emerald-100 font-medium px-4 py-2.5 rounded-xl text-sm">
+                  <span>📦</span>
+                  <span>{totalListings} {t('availableProducts')}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5 bg-emerald-700/60 border border-emerald-400/30 text-emerald-200 font-medium px-3.5 py-2.5 rounded-xl text-xs">
+                  <span>🌱</span>
+                  <span>{t('directFarmerPrices')}</span>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -385,13 +415,15 @@ export default function Products() {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
         {/* Quick Stats Grid */}
-        <section aria-label="Farmer Statistics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <section aria-label="Market Statistics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-2xl shrink-0">
               📦
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-700">{t('totalListings')}</p>
+              <p className="text-xs font-medium text-slate-700">
+                {isFarmerUser ? t('totalListings') : t('availableProducts')}
+              </p>
               <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">{totalListings}</p>
             </div>
           </div>
@@ -401,24 +433,40 @@ export default function Products() {
               ⚖️
             </div>
             <div>
-              <p className="text-xs font-medium text-slate-700">{t('totalQuantity')}</p>
+              <p className="text-xs font-medium text-slate-700">
+                {isFarmerUser ? t('totalQuantity') : t('unitsInStock')}
+              </p>
               <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">
                 {totalStockKg.toLocaleString()} <span className="text-xs font-normal text-slate-700">units</span>
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl shrink-0">
-              💰
+          {isFarmerUser ? (
+            <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl shrink-0">
+                💰
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-700">{t('totalValue')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">
+                  Rs. {totalInventoryValue.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-medium text-slate-700">{t('totalValue')}</p>
-              <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">
-                Rs. {totalInventoryValue.toLocaleString()}
-              </p>
+          ) : (
+            <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-2xl shrink-0">
+                📍
+              </div>
+              <div>
+                <p className="text-xs font-medium text-slate-700">{t('islandwideLocations')}</p>
+                <p className="text-xl sm:text-2xl font-bold text-slate-800 mt-0.5">
+                  {uniqueLocations} <span className="text-xs font-normal text-slate-700">Hubs</span>
+                </p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-2xl shrink-0">
@@ -437,13 +485,13 @@ export default function Products() {
         <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 mb-6 space-y-3">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
             {/* Search Input */}
-            <div className="relative w-full sm:w-80">
+            <div className={`relative w-full ${isFarmerUser ? 'sm:w-80' : 'sm:w-96'}`}>
               <span className="absolute left-3.5 top-2.5 text-slate-400">🔍</span>
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t('searchListings') || 'Filter products...'}
+                placeholder={isFarmerUser ? (t('searchListings') || 'Filter products...') : 'Search fresh produce, location, or farmer...'}
                 className="w-full pl-9 pr-8 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500"
               />
               {searchTerm && (
@@ -456,15 +504,17 @@ export default function Products() {
               )}
             </div>
 
-            {/* "+ Add Product" quick button */}
-            <button
-              type="button"
-              onClick={handleOpenAddModal}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-sm transition active:scale-95 cursor-pointer"
-            >
-              <span>➕</span>
-              <span>{t('addNewProduct')}</span>
-            </button>
+            {/* "+ Add Product" quick button - FARMERS ONLY */}
+            {isFarmerUser && (
+              <button
+                type="button"
+                onClick={handleOpenAddModal}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2.5 rounded-xl text-sm shadow-sm transition active:scale-95 cursor-pointer"
+              >
+                <span>➕</span>
+                <span>{t('addNewProduct')}</span>
+              </button>
+            )}
           </div>
 
           {/* Category Filter Chips */}
@@ -499,7 +549,7 @@ export default function Products() {
         {/* Listings Section Header */}
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <span>{t('myListings')}</span>
+            <span>{isFarmerUser ? t('myListings') : t('availableProducts')}</span>
             <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full">
               {filteredProducts.length}
             </span>
@@ -516,12 +566,16 @@ export default function Products() {
             <h3 className="text-lg font-bold text-slate-700">
               {searchTerm || selectedCategoryFilter !== 'All'
                 ? 'No matching products found'
-                : t('noProductsFound')}
+                : isFarmerUser
+                  ? t('noProductsFound')
+                  : 'No produce available at the moment'}
             </h3>
             <p className="text-sm text-slate-700 max-w-md mx-auto mt-1 mb-5">
               {searchTerm || selectedCategoryFilter !== 'All'
                 ? 'Try clearing your search query or choosing another category filter.'
-                : t('noProductsDesc')}
+                : isFarmerUser
+                  ? t('noProductsDesc')
+                  : t('noProduceDesc')}
             </p>
             {searchTerm || selectedCategoryFilter !== 'All' ? (
               <button
@@ -533,14 +587,14 @@ export default function Products() {
               >
                 Reset Filters
               </button>
-            ) : (
+            ) : isFarmerUser ? (
               <button
                 onClick={handleOpenAddModal}
                 className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl transition shadow-md cursor-pointer"
               >
                 ➕ {t('addNewProduct')}
               </button>
-            )}
+            ) : null}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -627,45 +681,64 @@ export default function Products() {
                       </span>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(product)}
-                        className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>✏️</span>
-                        <span>{t('edit')}</span>
-                      </button>
-
-                      {deleteConfirmId === product.id ? (
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(product.id)}
-                            className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmId(null)}
-                            className="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium transition cursor-pointer"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
+                    {/* Actions: Farmers see Edit/Delete, Customers see Contact Farmer */}
+                    {isFarmerUser ? (
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setDeleteConfirmId(product.id)}
-                          className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1 cursor-pointer"
+                          onClick={() => handleEdit(product)}
+                          className="px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1 cursor-pointer"
                         >
-                          <span>🗑️</span>
-                          <span>{t('delete')}</span>
+                          <span>✏️</span>
+                          <span>{t('edit')}</span>
                         </button>
-                      )}
-                    </div>
+
+                        {deleteConfirmId === product.id ? (
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(product.id)}
+                              className="px-2.5 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDeleteConfirmId(null)}
+                              className="px-2 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl text-xs font-medium transition cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmId(product.id)}
+                            className="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition active:scale-95 flex items-center gap-1 cursor-pointer"
+                          >
+                            <span>🗑️</span>
+                            <span>{t('delete')}</span>
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        {product.contact ? (
+                          <a
+                            href={`tel:${product.contact.replace(/\s+/g, '')}`}
+                            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5 cursor-pointer"
+                            title={`Contact ${product.farmer || 'Farmer'}`}
+                          >
+                            <span>📞</span>
+                            <span>{t('contactFarmer')}</span>
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium italic">
+                            Direct from farm
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -674,8 +747,8 @@ export default function Products() {
         )}
       </main>
 
-      {/* POPUP MODAL FOR ADD / EDIT PRODUCT */}
-      {isModalOpen && (
+      {/* POPUP MODAL FOR ADD / EDIT PRODUCT - FARMERS ONLY */}
+      {isModalOpen && isFarmerUser && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs overflow-y-auto"
           onClick={(e) => {

@@ -138,8 +138,18 @@ export default function Requests() {
                     </select>
                     
                     <div className="flex justify-between items-end">
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <p className="text-slate-600 font-medium">Seller: <span className="text-slate-800 font-bold">{selectedProduct.farmer}</span></p>
+                        {selectedProduct.contact && (
+                          <p className="text-slate-500 text-sm flex items-center gap-1">
+                            📞 {selectedProduct.contact}
+                          </p>
+                        )}
+                        {selectedProduct.location && (
+                          <p className="text-slate-500 text-sm flex items-center gap-1">
+                            📍 {selectedProduct.location}
+                          </p>
+                        )}
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-green-600">Rs. {pricePerKg} <span className="text-sm font-normal text-slate-500">/ {selectedProduct.unit}</span></div>

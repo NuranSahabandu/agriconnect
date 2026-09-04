@@ -1,6 +1,10 @@
+require('dotenv').config()
+
 const express = require('express')
 const cors = require('cors')
-const { products, requests } = require('./data')
+const connectDB = require('./db')
+const Product = require('./models/Product')
+const Request = require('./models/Request')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -12,47 +16,42 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' })
 })
 
-app.get('/api/products', (req, res) => {
+app.get('/api/products', async (req, res) => {
+  const products = await Product.find()
   res.json(products)
 })
 
-app.post('/api/products', (req, res) => {
-  const product = {
-    id: products.length ? products[products.length - 1].id + 1 : 1,
-    ...req.body,
-  }
-  products.push(product)
+app.post('/api/products', async (req, res) => {
+  const product = await Product.create(req.body)
   res.status(201).json(product)
 })
 
-app.get('/api/requests', (req, res) => {
+app.get('/api/requests', async (req, res) => {
+  const requests = await Request.find()
   res.json(requests)
 })
 
-app.post('/api/requests', (req, res) => {
-  const newRequest = {
-    id: requests.length ? requests[requests.length - 1].id + 1 : 1,
-    status: 'pending',
-    ...req.body,
-  }
-  requests.push(newRequest)
+app.post('/api/requests', async (req, res) => {
+  const newRequest = await Request.create(req.body)
   res.status(201).json(newRequest)
 })
 
-app.patch('/api/requests/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const existingRequest = requests.find((r) => r.id === id)
+app.patch('/api/requests/:id', async (req, res) => {
+  const existingRequest = await Request.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  })
 
   if (!existingRequest) {
     return res.status(404).json({ error: 'Request not found' })
   }
 
-  Object.assign(existingRequest, req.body)
   res.json(existingRequest)
 })
 
 app.use('/api/products/search', require('./listing/listingRoutes'))
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`)
+  })
 })

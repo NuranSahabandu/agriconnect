@@ -1,9 +1,9 @@
 // Handles request/response logic for product listing endpoints
 
-const { products } = require("../data.js");
+const Product = require("../models/Product.js");
 const { searchProducts: searchProductsService } = require("./listingService.js");
 
-function searchProducts(req, res) {
+async function searchProducts(req, res) {
   try {
     const { search, category, location, maxPrice, sortBy } = req.query;
 
@@ -15,6 +15,7 @@ function searchProducts(req, res) {
       sortBy,
     };
 
+    const products = await Product.find();
     const results = searchProductsService(products, filters);
 
     res.json({ results, count: results.length });

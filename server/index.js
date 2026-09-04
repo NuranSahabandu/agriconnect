@@ -1,28 +1,26 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
-const { products, requests } = require('./data')
+const { connectDB } = require('./config/db')
+const authRoutes = require('./routes/auth')
+const productRoutes = require('./routes/products')
+const { requests } = require('./data')
 
 const app = express()
 const PORT = process.env.PORT || 5050
 
+// Initialize MongoDB Atlas Connection
+connectDB()
+
 app.use(cors())
 app.use(express.json())
 
+// Mount Routes
+app.use('/api/auth', authRoutes)
+app.use('/api/products', productRoutes)
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' })
-})
-
-app.get('/api/products', (req, res) => {
-  res.json(products)
-})
-
-app.post('/api/products', (req, res) => {
-  const product = {
-    id: products.length ? products[products.length - 1].id + 1 : 1,
-    ...req.body,
-  }
-  products.push(product)
-  res.status(201).json(product)
+  res.json({ status: 'ok', time: new Date().toISOString() })
 })
 
 app.get('/api/requests', (req, res) => {

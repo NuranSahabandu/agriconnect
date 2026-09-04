@@ -1,10 +1,75 @@
 export const translations = {
   en: {
-    addProduct: 'Add Product',
-    quantity: 'Quantity',
-    price: 'Price',
+    // Nav & General
+    home: 'Home',
+    products: 'Products',
     search: 'Search',
+    requests: 'Requests',
     myDashboard: 'My Dashboard',
+    
+    // Product Listing Section
+    farmerTitle: 'Farmer Product Management',
+    farmerSubtitle: 'List your agricultural harvests directly to wholesale & retail buyers across Sri Lanka.',
+    addNewProduct: 'Add New Product',
+    editProduct: 'Edit Product',
+    updateProduct: 'Update Product',
+    cancelEdit: 'Cancel Edit',
+    myListings: 'My Product Listings',
+    noProductsFound: 'No products listed yet',
+    noProductsDesc: 'Start by listing your harvested produce to connect with buyers.',
+    
+    // Form Labels
+    productName: 'Product Name',
+    productNamePlaceholder: 'e.g., Fresh Tomato, Red Onion, Carrot',
+    category: 'Category',
+    selectCategory: 'Select Category',
+    quantity: 'Quantity Available',
+    unit: 'Unit',
+    price: 'Price per Unit',
+    pricePlaceholder: 'e.g., 180',
+    location: 'Farm Location / Market',
+    selectLocation: 'Select Location / Hub',
+    otherLocation: 'Or enter custom location...',
+    farmerName: 'Farmer / Farm Name',
+    farmerNamePlaceholder: 'e.g., Sunil Bandara',
+    contactNumber: 'Contact / WhatsApp Number',
+    contactPlaceholder: 'e.g., 077 123 4567',
+    description: 'Description / Quality Notes (Optional)',
+    descriptionPlaceholder: 'e.g., Freshly harvested Grade A organic produce from greenhouse.',
+    
+    // Categories
+    catVegetable: 'Vegetables',
+    catFruit: 'Fruits',
+    catGrain: 'Grains & Rice',
+    catSpice: 'Spices',
+    catOther: 'Other Produce',
+    catAll: 'All Categories',
+
+    // Stats
+    totalListings: 'Total Listings',
+    totalQuantity: 'Total Stock',
+    totalValue: 'Estimated Stock Value',
+    categoriesCount: 'Active Categories',
+
+    // Actions
+    addProduct: 'Add Product to Market',
+    edit: 'Edit',
+    delete: 'Delete',
+    confirmDelete: 'Are you sure you want to delete this listing?',
+    searchListings: 'Filter your listings by name...',
+    resetForm: 'Reset Form',
+
+    // Notifications & Validation
+    errNameRequired: 'Product name is required (at least 2 characters)',
+    errCategoryRequired: 'Please select a product category',
+    errQuantityRequired: 'Quantity must be greater than 0',
+    errPriceRequired: 'Price must be greater than 0',
+    errLocationRequired: 'Farm location is required',
+    errContactRequired: 'Valid phone number is required (at least 9 digits)',
+    errFarmerRequired: 'Farmer name is required',
+    productAddedSuccess: 'Product listed successfully! 🌾',
+    productUpdatedSuccess: 'Product listing updated successfully! ✨',
+    productDeletedSuccess: 'Product deleted from market! 🗑️',
 
     // Dashboard
     'dashboard.title': 'Dashboard',
@@ -26,11 +91,76 @@ export const translations = {
     'dashboard.error': "Couldn't load dashboard data — is the server running?",
   },
   si: {
-    addProduct: 'නිෂ්පාදනයක් එකතු කරන්න',
-    quantity: 'ප්‍රමාණය',
-    price: 'මිල',
+    // Nav & General
+    home: 'මුල් පිටුව',
+    products: 'නිෂ්පාදන',
     search: 'සොයන්න',
+    requests: 'ඉල්ලීම්',
     myDashboard: 'මගේ පුවරුව',
+    
+    // Product Listing Section
+    farmerTitle: 'ගොවි නිෂ්පාදන කළමනාකරණය',
+    farmerSubtitle: 'ඔබේ අස්වැන්න ශ්‍රී ලංකාව පුරා සිටින ගැනුම්කරුවන් වෙත සෘජුවම ඉදිරිපත් කරන්න.',
+    addNewProduct: 'නව නිෂ්පාදනයක් එක් කරන්න',
+    editProduct: 'නිෂ්පාදනය සංස්කරණය කරන්න',
+    updateProduct: 'යාවත්කාලීන කරන්න',
+    cancelEdit: 'අවලංගු කරන්න',
+    myListings: 'මගේ නිෂ්පාදන ලැයිස්තුව',
+    noProductsFound: 'තවමත් නිෂ්පාදන එක් කර නොමැත',
+    noProductsDesc: 'ගැනුම්කරුවන් සමඟ සම්බන්ධ වීමට ඔබේ අස්වැන්න ලැයිස්තුගත කිරීම ආරම්භ කරන්න.',
+    
+    // Form Labels
+    productName: 'නිෂ්පාදනයේ නම',
+    productNamePlaceholder: 'උදා: තක්කාලි, රතු ළූණු, කැරට්',
+    category: 'කාණ්ඩය',
+    selectCategory: 'කාණ්ඩය තෝරන්න',
+    quantity: 'ලබා ගත හැකි ප්‍රමාණය',
+    unit: 'ඒකකය',
+    price: 'ඒකකයක මිල (රු.)',
+    pricePlaceholder: 'උදා: 180',
+    location: 'ගොවිපල පිහිටීම / නගරය',
+    selectLocation: 'නගරය තෝරන්න',
+    otherLocation: 'වෙනත් ප්‍රදේශයක් ඇතුළත් කරන්න...',
+    farmerName: 'ගොවියාගේ / ගොවිපල නම',
+    farmerNamePlaceholder: 'උදා: සුනිල් බණ්ඩාර',
+    contactNumber: 'දුරකථන / WhatsApp අංකය',
+    contactPlaceholder: 'උදා: 077 123 4567',
+    description: 'විස්තරය / විශේෂ සටහන් (විකල්ප)',
+    descriptionPlaceholder: 'උදා: අලුතින් නෙලාගත් උසස් තත්ත්වයේ අස්වැන්න.',
+    
+    // Categories
+    catVegetable: 'එළවළු',
+    catFruit: 'පළතුරු',
+    catGrain: 'ධාන්‍ය හා සහල්',
+    catSpice: 'කුළුබඩු',
+    catOther: 'වෙනත්',
+    catAll: 'සියලුම කාණ්ඩ',
+
+    // Stats
+    totalListings: 'මුළු ලැයිස්තුගත කිරීම්',
+    totalQuantity: 'මුළු තොගය',
+    totalValue: 'තොගයේ ඇස්තමේන්තුගත වටිනාකම',
+    categoriesCount: 'ක්‍රියාකාරී කාණ්ඩ',
+
+    // Actions
+    addProduct: 'නිෂ්පාදනයක් එකතු කරන්න',
+    edit: 'සංස්කරණය',
+    delete: 'මකන්න',
+    confirmDelete: 'මෙම නිෂ්පාදනය ලැයිස්තුවෙන් ඉවත් කිරීමට ඔබට විශ්වාසද?',
+    searchListings: 'නම අනුව සොයන්න...',
+    resetForm: 'පිරිසිදු කරන්න',
+
+    // Notifications & Validation
+    errNameRequired: 'නිෂ්පාදනයේ නම ඇතුළත් කිරීම අනිවාර්යයි',
+    errCategoryRequired: 'කරුණාකර කාණ්ඩයක් තෝරන්න',
+    errQuantityRequired: 'ප්‍රමාණය 0 ට වඩා වැඩි විය යුතුය',
+    errPriceRequired: 'මිල 0 ට වඩා වැඩි විය යුතුය',
+    errLocationRequired: 'පිහිටි ස්ථානය ඇතුළත් කිරීම අනිවාර්යයි',
+    errContactRequired: 'වලංගු දුරකථන අංකයක් ඇතුළත් කරන්න (ඉලක්කම් 9ක් හෝ 10ක්)',
+    errFarmerRequired: 'ගොවියාගේ නම ඇතුළත් කිරීම අනිවාර්යයි',
+    productAddedSuccess: 'නිෂ්පාදනය සාර්ථකව එකතු කරන ලදී! 🌾',
+    productUpdatedSuccess: 'නිෂ්පාදනය සාර්ථකව යාවත්කාලීන කරන ලදී! ✨',
+    productDeletedSuccess: 'නිෂ්පාදනය ඉවත් කරන ලදී! 🗑️',
 
     // Dashboard
     'dashboard.title': 'උපකරණ පුවරුව',

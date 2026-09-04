@@ -11,9 +11,10 @@ async function connectDB() {
   }
 
   try {
-    const conn = await mongoose.connect(uri)
+    const dbName = process.env.MONGO_DB_NAME || 'agriconnect'
+    const conn = await mongoose.connect(uri, { dbName })
     isConnected = true
-    console.log(`✅ [MongoDB Atlas] Connected successfully to host: ${conn.connection.host} (DB: ${conn.connection.name})`)
+    console.log(`✅ [MongoDB Atlas] Connected successfully to host: ${conn.connection.host} (Database: ${conn.connection.name})`)
     return true
   } catch (error) {
     console.error('❌ [MongoDB Atlas] Connection Error:', error.message)

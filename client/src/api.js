@@ -195,63 +195,76 @@ export async function getProducts() {
 }
 
 export async function addProduct(product) {
+  try {
+    const savedServerProduct = await request('/api/products', {
+      method: 'POST',
+      body: JSON.stringify(product),
+    })
+
+    if (savedServerProduct) {
+      const current = getLocalProducts().filter((p) => String(p.id) !== String(savedServerProduct.id))
+      const updated = [savedServerProduct, ...current]
+      saveLocalProducts(updated)
+      return savedServerProduct
+    }
+  } catch (err) {
+    console.warn('Backend unavailable, saving product locally:', err.message)
+  }
+
+  // Fallback if backend offline
   const current = getLocalProducts()
-  const newId = current.length ? Math.max(...current.map((p) => p.id || 0)) + 1 : 1
+  const newId = current.length ? Math.max(...current.map((p) => Number(p.id) || 0)) + 1 : 1
   const newProduct = {
     ...product,
     id: newId,
     createdAt: new Date().toISOString(),
   }
-
   const updated = [newProduct, ...current]
   saveLocalProducts(updated)
-
-  try {
-    await request('/api/products', {
-      method: 'POST',
-      body: JSON.stringify(newProduct),
-    })
-  } catch {
-    // Ignore server error
-  }
-
   return newProduct
 }
 
 export async function updateProduct(id, updatedFields) {
+  try {
+    const updatedServerProduct = await request(`/api/products/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(updatedFields),
+    })
+
+    if (updatedServerProduct) {
+      const current = getLocalProducts().map((p) =>
+        String(p.id) === String(id) ? updatedServerProduct : p
+      )
+      saveLocalProducts(current)
+      return updatedServerProduct
+    }
+  } catch (err) {
+    console.warn('Backend unavailable, updating product locally:', err.message)
+  }
+
+  // Fallback update
   const current = getLocalProducts()
-  const index = current.findIndex((p) => p.id === id)
+  const index = current.findIndex((p) => String(p.id) === String(id))
   if (index === -1) throw new Error('Product not found')
 
   const updatedProduct = { ...current[index], ...updatedFields }
   current[index] = updatedProduct
   saveLocalProducts(current)
-
-  try {
-    await request(`/api/products/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updatedProduct),
-    })
-  } catch {
-    // Ignore server error
-  }
-
   return updatedProduct
 }
 
 export async function deleteProduct(id) {
-  const current = getLocalProducts()
-  const filtered = current.filter((p) => p.id !== id)
-  saveLocalProducts(filtered)
-
   try {
     await request(`/api/products/${id}`, {
       method: 'DELETE',
     })
-  } catch {
-    // Ignore server error
+  } catch (err) {
+    console.warn('Backend unavailable, deleting product locally:', err.message)
   }
 
+  const current = getLocalProducts()
+  const filtered = current.filter((p) => String(p.id) !== String(id))
+  saveLocalProducts(filtered)
   return { success: true }
 }
 

@@ -3,7 +3,8 @@ const express = require('express')
 const cors = require('cors')
 const { connectDB } = require('./config/db')
 const authRoutes = require('./routes/auth')
-const { products, requests } = require('./data')
+const productRoutes = require('./routes/products')
+const { requests } = require('./data')
 
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -14,44 +15,12 @@ connectDB()
 app.use(cors())
 app.use(express.json())
 
-// Mount Authentication Routes
+// Mount Routes
 app.use('/api/auth', authRoutes)
+app.use('/api/products', productRoutes)
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() })
-})
-
-app.get('/api/products', (req, res) => {
-  res.json(products)
-})
-
-app.post('/api/products', (req, res) => {
-  const product = {
-    id: products.length ? Math.max(...products.map((p) => p.id || 0)) + 1 : 1,
-    ...req.body,
-  }
-  products.push(product)
-  res.status(201).json(product)
-})
-
-app.put('/api/products/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const index = products.findIndex((p) => p.id === id)
-  if (index === -1) {
-    return res.status(404).json({ error: 'Product not found' })
-  }
-  products[index] = { ...products[index], ...req.body, id }
-  res.json(products[index])
-})
-
-app.delete('/api/products/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const index = products.findIndex((p) => p.id === id)
-  if (index === -1) {
-    return res.status(404).json({ error: 'Product not found' })
-  }
-  const deleted = products.splice(index, 1)[0]
-  res.json(deleted)
 })
 
 app.get('/api/requests', (req, res) => {

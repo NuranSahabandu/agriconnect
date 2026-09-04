@@ -1016,6 +1016,14 @@ export default function Products() {
                     className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200 focus:border-emerald-500 resize-none"
                   />
                 </div>
+
+                {/* MongoDB Atlas Notice */}
+                <div className="flex items-center gap-2 text-[11px] text-emerald-800 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200">
+                  <span className="text-base">🍃</span>
+                  <span>
+                    Product listings are automatically saved into <strong>MongoDB Atlas</strong> database under the <strong>products</strong> collection.
+                  </span>
+                </div>
               </form>
             </div>
 

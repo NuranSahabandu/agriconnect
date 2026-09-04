@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5050'
 const STORAGE_KEY_PRODUCTS = 'agriconnect_products'
 const STORAGE_KEY_USERS = 'agriconnect_registered_users'
 
@@ -281,3 +281,9 @@ export function addRequest(requestData) {
   })
 }
 
+export function updateRequest(id, statusData) {
+  return request(`/api/requests/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(statusData),
+  })
+}

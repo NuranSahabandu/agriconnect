@@ -1,6 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 function Home() {
+  const { user } = useAuth()
+  const isBuyer = user?.role === 'buyer' || user?.role === 'customer'
+  const isFarmer = user?.role === 'farmer'
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-green-200">
       {/* Hero Section */}
@@ -26,12 +31,28 @@ function Home() {
             AgriConnect is a streamlined marketplace bridging the gap between agriculture and commerce. List products, find the best matches, and trade directly.
           </p>
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
-            <Link to="/products" className="group relative inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl shadow-green-600/20 transition-all hover:-translate-y-1 w-full sm:w-auto text-lg overflow-hidden">
-              <span className="relative z-10 flex items-center gap-2">
-                Start Selling 🌾
-              </span>
-              <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
-            </Link>
+            {isFarmer ? (
+              <Link to="/products" className="group relative inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl shadow-green-600/20 transition-all hover:-translate-y-1 w-full sm:w-auto text-lg overflow-hidden">
+                <span className="relative z-10 flex items-center gap-2">
+                  Manage Harvest 🌾
+                </span>
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+              </Link>
+            ) : isBuyer ? (
+              <Link to="/products" className="group relative inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl shadow-green-600/20 transition-all hover:-translate-y-1 w-full sm:w-auto text-lg overflow-hidden">
+                <span className="relative z-10 flex items-center gap-2">
+                  Browse Produce 🛒
+                </span>
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+              </Link>
+            ) : (
+              <Link to="/products" className="group relative inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-8 rounded-2xl shadow-xl shadow-green-600/20 transition-all hover:-translate-y-1 w-full sm:w-auto text-lg overflow-hidden">
+                <span className="relative z-10 flex items-center gap-2">
+                  Start Selling 🌾
+                </span>
+                <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+              </Link>
+            )}
             <Link to="/search" className="inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-200 font-semibold py-4 px-8 rounded-2xl shadow-sm transition-all hover:-translate-y-1 w-full sm:w-auto text-lg">
               Explore Market 🔎
             </Link>
@@ -108,12 +129,18 @@ function Home() {
           {/* Feature 1 */}
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl hover:border-green-100 transition-all duration-300 group hover:-translate-y-2">
             <div className="bg-gradient-to-br from-green-100 to-green-50 w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-8 group-hover:scale-110 transition-transform duration-300 shadow-inner">
-              👨‍🌾
+              {isBuyer ? '🛒' : '👨‍🌾'}
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3">Product Listing</h3>
-            <p className="text-slate-600 mb-8 leading-relaxed">List your agricultural products with categories, quantities, pricing, and precise location details.</p>
+            <h3 className="text-xl font-bold text-slate-900 mb-3">
+              {isBuyer ? 'Fresh Marketplace' : 'Product Listing'}
+            </h3>
+            <p className="text-slate-600 mb-8 leading-relaxed">
+              {isBuyer
+                ? 'Explore fresh farm harvests with transparent pricing, available stock, and direct contact with verified farmers.'
+                : 'List your agricultural products with categories, quantities, pricing, and precise location details.'}
+            </p>
             <Link to="/products" className="inline-flex items-center gap-2 text-green-600 font-semibold hover:text-green-700 transition-colors">
-              Add a product 
+              {isBuyer ? 'Browse produce' : 'Add a product'} 
               <span className="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
             </Link>
           </div>

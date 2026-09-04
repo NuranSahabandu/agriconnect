@@ -34,7 +34,9 @@ function NavBar() {
         {/* Desktop Links */}
         <div className="hidden md:flex items-center gap-1.5">
           <NavLink to="/" className={navLinkClasses}>Home</NavLink>
-          <NavLink to="/products" className={navLinkClasses}>Products</NavLink>
+          <NavLink to="/products" className={navLinkClasses}>
+            {user?.role === 'farmer' ? `🌾 ${t('farmerNav') || 'My Produce'}` : user?.role === 'buyer' ? `🛒 ${t('marketplaceNav') || 'Marketplace'}` : 'Products'}
+          </NavLink>
           <NavLink to="/search" className={navLinkClasses}>{t('search')}</NavLink>
           <NavLink to="/requests" className={navLinkClasses}>Requests</NavLink>
           <NavLink to="/dashboard" className={navLinkClasses}>{t('myDashboard')}</NavLink>
@@ -48,7 +50,7 @@ function NavBar() {
                 {user.role === 'farmer' ? '👨🌾' : '🛒'} {user.name}
               </span>
               <span className="capitalize font-bold text-[10px] bg-emerald-200 text-emerald-800 px-2 py-0.5 rounded-full">
-                {user.role}
+                {user.role === 'buyer' ? 'Customer' : user.role}
               </span>
               <button
                 type="button"
@@ -92,7 +94,9 @@ function NavBar() {
       <div className="md:hidden overflow-x-auto border-t border-slate-100 bg-white/50 backdrop-blur-md">
         <div className="flex p-3 gap-2 min-w-max">
           <NavLink to="/" className={navLinkClasses}>Home</NavLink>
-          <NavLink to="/products" className={navLinkClasses}>Products</NavLink>
+          <NavLink to="/products" className={navLinkClasses}>
+            {user?.role === 'farmer' ? `🌾 ${t('farmerNav') || 'My Produce'}` : user?.role === 'buyer' ? `🛒 ${t('marketplaceNav') || 'Marketplace'}` : 'Products'}
+          </NavLink>
           <NavLink to="/search" className={navLinkClasses}>{t('search')}</NavLink>
           <NavLink to="/requests" className={navLinkClasses}>Requests</NavLink>
           <NavLink to="/dashboard" className={navLinkClasses}>{t('myDashboard')}</NavLink>

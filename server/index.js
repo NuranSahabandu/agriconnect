@@ -51,6 +51,8 @@ app.patch('/api/requests/:id', (req, res) => {
   res.json(existingRequest)
 })
 
+app.use('/api/products/search', require('./listing/listingRoutes'))
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
